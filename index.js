@@ -26,23 +26,33 @@ app.get('/api/hello', function(req, res) {
 app.post('/api/shorturl', (req, res) => {
   const url = req.body.url;
 
-  try{
-    new URL(url);
-  } catch (err) {
-    return res.json({ error: 'invalid url' });
-  } 
+  
 
-  const validateUrl = async (url) => {
-    url = new URL(url)
-    await dns.lookup(url.hostname, (err) => {
-      if (err) return false;
-      return true;
+  let urls;
+  try {
+    urls = new URL(url);
+  } catch (err) {
+    return res.json({"error": "invalid url"});
+  }
+
+  if (urls.protocol !== 'http:' && urls.protocol !== 'https:') {
+    return res.json({"error": "invalid url"});
+  }
+
+  const validateUrl = (url, callback) => {
+    dns.lookup(url.hostname, (err) => {
+      if (err) {
+        return callback(false);
+      }
+      return callback(true);
     });
   };
 
-  if (!validateUrl(url)) {
-    return res.json({ error: 'invalid url' });
-  }
+  if (!validateUrl(urls, (isValid) => {
+    if (!isValid) {
+      return res.json({"error": "invalid url"});
+    }
+  }));
 
   let short_url = Math.floor(Math.random() * 1000);
   const newUrl = new Url({
