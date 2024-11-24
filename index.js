@@ -29,7 +29,7 @@ app.post('/api/shorturl', (req, res) => {
   try{
     new URL(url);
   } catch (err) {
-    return res.json({ error: 'couldnt resolve' });
+    return res.json({ error: 'invalid url' });
   } 
 
   const validateUrl = async (url) => {
@@ -59,11 +59,11 @@ app.get('/api/shorturl/:short_url', (req, res) => {
   const short_url = req.params.short_url;
   Url.findOne({short_url: short_url}).then((data) => {
     if (!data) {
-      return res.json({ error: 'No short url found for given input' });
+      return res.json({ error: 'invalid url' });
     }
     res.redirect(data.original_url);
   }).catch((err) => {
-    return res.json({ error: 'No short url' });
+    return res.json({ error: 'invalid url' });
   });
 });
 
